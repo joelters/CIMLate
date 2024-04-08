@@ -11,6 +11,7 @@ LRate(
   D,
   MLreg = c("Lasso", "Ridge", "RF", "XGB"),
   MLps = c("RF", "Logit_lasso"),
+  pscore = NULL,
   polynomial = 1,
   CF = TRUE,
   K = 2
@@ -28,6 +29,9 @@ Lasso, Ridge, Random Forests or XGBoosting to estimate response functions}
 
 \item{MLps}{is a string specifying which machine learner to use among
 Random Forests or Logit Lasso to estimate propensity scores}
+
+\item{pscore}{vector with treatment probabilities if known (e.g. in an RCT).
+Otherwise leave NULL so that they are estimated using MLps}
 
 \item{polynomial}{degree of polynomial to be fitted when using Lasso, Ridge
 or Logit Lasso. 1 just fits the input X. 2 squares all variables and adds

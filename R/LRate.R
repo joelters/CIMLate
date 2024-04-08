@@ -13,6 +13,8 @@
 #' Lasso, Ridge, Random Forests or XGBoosting to estimate response functions
 #' @param MLps is a string specifying which machine learner to use among
 #' Random Forests or Logit Lasso to estimate propensity scores
+#' @param pscore vector with treatment probabilities if known (e.g. in an RCT).
+#' Otherwise leave NULL so that they are estimated using MLps
 #' @param polynomial degree of polynomial to be fitted when using Lasso, Ridge
 #' or Logit Lasso. 1 just fits the input X. 2 squares all variables and adds
 #' all pairwise interactions. 3 squares and cubes all variables and adds all
@@ -35,6 +37,7 @@ LRate <- function(Y,
                   D,
                   MLreg = c("Lasso", "Ridge", "RF", "XGB"),
                   MLps = c("RF", "Logit_lasso"),
+                  pscore = NULL,
                   polynomial = 1,
                   CF = TRUE,
                   K = 2){
@@ -46,7 +49,19 @@ LRate <- function(Y,
     mu1 <- ML::FVest(mu1,X,Y,Xnew = X, Ynew = Y, ML = MLreg, polynomial = polynomial)
     mu0 <- ML::modest(X[D == 0,], Y[D == 0], ML = MLreg, polynomial = polynomial)
     mu0 <- ML::FVest(mu0,X,Y,Xnew = X, Ynew = Y, ML = MLreg, polynomial = polynomial)
-    ps <- ML::MLest(X,D,ML = MLps, polynomial = polynomial)
+    if (is.null(pscore) == TRUE){
+      ps <- ML::MLest(X,D,ML = MLps, polynomial = polynomial)
+      if (sum(ps$FVs <= 0 | ps$FVs >= 1) > 0){
+        warning("There are estimated propensity scores <= 0 or >= 1,
+                they have been changed to 0.001 or 0.999")
+        ps$FVs <- ps$FVs*(ps$FVs > 0 | ps$FVs < 1) +
+          0.001*(ps$FVs <= 0) + 0.999*(ps$FVs >= 1)
+      }
+    }
+    else{
+      ps <- pscore
+    }
+
     lr <- mu1 - mu0 + (D/ps$FVs)*(Y-mu1) - ((1-D)/(1-ps$FVs))*(Y-mu0)
     b4 <- round(mean(lr),3)
     # se4 <- sd(lr)/sqrt(length(Y))
@@ -69,8 +84,9 @@ LRate <- function(Y,
       if (!("data.frame" %in% class(Xnoti))){
         Xnoti <- data.frame(Xnoti)
       }
-
-      mps <- ML::modest(Xnoti[,], Dnoti, ML = MLps, polynomial = polynomial)
+      if (is.null(pscore) == TRUE){
+        mps <- ML::modest(Xnoti[,], Dnoti, ML = MLps, polynomial = polynomial)
+      }
       mu1m <- ML::modest(Xnoti[Dnoti == 1,], Ynoti[Dnoti == 1], ML = MLreg, polynomial = polynomial)
       mu0m <- ML::modest(Xnoti[Dnoti == 0,], Ynoti[Dnoti == 0], ML = MLreg, polynomial = polynomial)
 
@@ -84,7 +100,12 @@ LRate <- function(Y,
 
       mu1[ind[[i]]] <- ML::FVest(mu1m, Xnoti, Ynoti, Xnew = Xi, Ynew = Yi, ML = MLreg, polynomial = polynomial)
       mu0[ind[[i]]] <- ML::FVest(mu0m, Xnoti, Ynoti, Xnew = Xi, Ynew = Yi, ML = MLreg, polynomial = polynomial)
-      ps[ind[[i]]] <- ML::FVest(mps, Xnoti, Dnoti, Xnew = Xi, Ynew = Di, ML = MLps, polynomial)
+      if (is.null(pscore) == TRUE){
+        ps[ind[[i]]] <- ML::FVest(mps, Xnoti, Dnoti, Xnew = Xi, Ynew = Di, ML = MLps, polynomial)
+      }
+      else{
+        ps[ind[[i]]] <- pscore[ind[[i]]]
+      }
 
       if (sum(ps[ind[[i]]] <= 0 | ps[ind[[i]]] >= 1) > 0){
         warning("There are estimated propensity scores <= 0 or >= 1,
