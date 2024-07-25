@@ -27,7 +27,7 @@
 #' IPWate(Y,X,D, ML = "RF")
 #'
 #' @export
-IPWate <- function(Y,X,D, ML = c("RF", "Lasso_logit"), pscore = NULL, polynomial = 1){
+IPWate <- function(Y,X,D, ML = c("RF", "Lasso_logit","grf"), pscore = NULL, polynomial = 1){
 
   if (!("data.frame" %in% class(X))){
     X <- data.frame(X)
