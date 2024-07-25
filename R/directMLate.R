@@ -26,7 +26,7 @@
 #' directMLate(Y,X,D, ML = "RF")
 #'
 #' @export
-directMLate <- function(Y,X,D, ML = c("Lasso", "Ridge", "RF", "XGB"), polynomial = 1){
+directMLate <- function(Y,X,D, ML = c("Lasso", "Ridge", "RF", "XGB","grf"), polynomial = 1){
 
   if (!("data.frame" %in% class(X))){
     X <- data.frame(X)
