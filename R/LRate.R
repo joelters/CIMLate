@@ -117,8 +117,8 @@ LRate <- function(Y,
     }
 
     lr_cf <- mu1 - mu0 + (D/ps)*(Y-mu1) - ((1-D)/(1-ps))*(Y-mu0)
-    b5 <- round(mean(lr_cf),3)
-    se5 <- round(sd(lr_cf)/sqrt(n),3)
+    b5 <- mean(lr_cf)
+    se5 <- sd(lr_cf)/sqrt(n)
     reslrcf <- data.frame("ATE" = b5, "se" = se5,"MLreg" = MLreg, "MLps" = MLps)
     return(reslrcf)
   }
