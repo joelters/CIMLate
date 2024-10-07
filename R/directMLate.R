@@ -26,15 +26,18 @@
 #' directMLate(Y,X,D, ML = "RF")
 #'
 #' @export
-directMLate <- function(Y,X,D, ML = c("Lasso", "Ridge", "RF", "XGB","grf"), polynomial = 1){
+directMLate <- function(Y,X,D, ML = c("Lasso", "Ridge", "RF", "XGB","grf","SL"), polynomial = 1,
+                        SL.library = c("SL.ranger")){
 
   if (!("data.frame" %in% class(X))){
     X <- data.frame(X)
   }
 
-  mu1 <- ML::modest(X[D == 1,], Y[D == 1], ML = ML, polynomial = polynomial)
+  mu1 <- ML::modest(X[D == 1,], Y[D == 1], ML = ML, polynomial = polynomial,
+                    SL.library = SL.library)
   mu1 <- ML::FVest(mu1,X,Y,Xnew = X, Ynew = Y, ML = ML, polynomial = polynomial)
-  mu0 <- ML::modest(X[D == 0,], Y[D == 0], ML = ML, polynomial = polynomial)
+  mu0 <- ML::modest(X[D == 0,], Y[D == 0], ML = ML, polynomial = polynomial,
+                    SL.library = SL.library)
   mu0 <- ML::FVest(mu0,X,Y,Xnew = X, Ynew = Y, ML = ML, polynomial = polynomial)
 
 
