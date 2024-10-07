@@ -5,7 +5,15 @@
 \title{Estimate Average Treatment Effect (ATE) using the Inverse Propensity Weighting
 method and machine learning to estimate the propensity score}
 \usage{
-IPWate(Y, X, D, ML = c("RF", "Lasso_logit"), pscore = NULL, polynomial = 1)
+IPWate(
+  Y,
+  X,
+  D,
+  ML = c("RF", "Lasso_logit", "grf", "SL"),
+  pscore = NULL,
+  polynomial = 1,
+  SL.library = c("SL.ranger")
+)
 }
 \arguments{
 \item{Y}{is a vector containing the outcome}

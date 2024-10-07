@@ -5,7 +5,14 @@
 \title{Estimate Average Treatment Effect (ATE) using machine learning to
 estimate the conditional expectations}
 \usage{
-directMLate(Y, X, D, ML = c("Lasso", "Ridge", "RF", "XGB"), polynomial = 1)
+directMLate(
+  Y,
+  X,
+  D,
+  ML = c("Lasso", "Ridge", "RF", "XGB", "grf", "SL"),
+  polynomial = 1,
+  SL.library = c("SL.ranger")
+)
 }
 \arguments{
 \item{Y}{is a vector containing the outcome}
