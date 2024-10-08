@@ -40,6 +40,7 @@ LRate <- function(Y,
                   SL.library = c("SL.ranger"),
                   pscore = NULL,
                   polynomial = 1,
+                  mtry = max(floor(ncol(X)/3), 1),
                   CF = TRUE,
                   K = 2){
   if (!("data.frame" %in% class(X))){
@@ -47,14 +48,14 @@ LRate <- function(Y,
   }
   if (CF == FALSE){
     mu1 <- ML::modest(X[D == 1,], Y[D == 1], ML = MLreg, polynomial = polynomial,
-                      SL.library = SL.library)
+                      mtry = mtry, SL.library = SL.library)
     mu1 <- ML::FVest(mu1,X,Y,Xnew = X, Ynew = Y, ML = MLreg, polynomial = polynomial)
     mu0 <- ML::modest(X[D == 0,], Y[D == 0], ML = MLreg, polynomial = polynomial,
-                      SL.library = SL.library)
+                      mtry = mtry, SL.library = SL.library)
     mu0 <- ML::FVest(mu0,X,Y,Xnew = X, Ynew = Y, ML = MLreg, polynomial = polynomial)
     if (is.null(pscore) == TRUE){
       ps <- ML::MLest(X,D,ML = MLps, polynomial = polynomial,
-                      SL.library = SL.library)
+                      mtry = mtry, SL.library = SL.library)
       if (sum(ps$FVs <= 0 | ps$FVs >= 1) > 0){
         warning("There are estimated propensity scores <= 0 or >= 1,
                 they have been changed to 0.001 or 0.999")
@@ -90,12 +91,12 @@ LRate <- function(Y,
       }
       if (is.null(pscore) == TRUE){
         mps <- ML::modest(Xnoti[,], Dnoti, ML = MLps, polynomial = polynomial,
-                          SL.library = SL.library)
+                          mtry = mtry, SL.library = SL.library)
       }
       mu1m <- ML::modest(Xnoti[Dnoti == 1,], Ynoti[Dnoti == 1], ML = MLreg, polynomial = polynomial,
-                         SL.library = SL.library)
+                         mtry = mtry, SL.library = SL.library)
       mu0m <- ML::modest(Xnoti[Dnoti == 0,], Ynoti[Dnoti == 0], ML = MLreg, polynomial = polynomial,
-                         SL.library = SL.library)
+                         mtry = mtry, SL.library = SL.library)
 
       Xi <- X[ind[[i]],]
       Di <- D[ind[[i]]]
