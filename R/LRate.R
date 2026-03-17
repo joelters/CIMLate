@@ -117,8 +117,8 @@
 #' @param K number of splits to use for cross-fitting
 #' @param csplot logical; if TRUE, returns a histogram overlay of propensity
 #' scores by treatment status to assess common support
-#' @returns dataframe with estimates and standard errors (if cross-fitting is employed),
-#' or a list with `results` and `csplot` when `csplot = TRUE`
+#' @returns a list with `results` (estimate, se, pval, and selected learners),
+#' `scores` (individual orthogonal scores), and optionally `csplot`
 #' @examples
 #' n <- 1000
 #' X <- rnorm(n)
@@ -264,13 +264,19 @@ LRate <- function(Y,
     }
 
     lr <- mu1 - mu0 + (D / ps$FVs) * (Y - mu1) - ((1 - D) / (1 - ps$FVs)) * (Y - mu0)
-    b4 <- round(mean(lr), 3)
-    reslr <- data.frame("ATE" = b4, "MLreg" = MLreg, "MLps" = MLps)
+    b4 <- mean(lr)
+    reslr <- data.frame(
+      estimate = b4,
+      se = NA_real_,
+      pval = NA_real_,
+      MLreg = MLreg,
+      MLps = MLps
+    )
     if (csplot) {
       p <- csplot_common_support(ps = ps$FVs, D = D)
-      return(list(results = reslr, csplot = p))
+      return(list(results = reslr, csplot = p, scores = lr))
     }
-    return(reslr)
+    return(list(results = reslr, scores = lr))
   } else {
     n <- length(Y)
     L <- K
@@ -331,14 +337,19 @@ LRate <- function(Y,
     lr_cf <- mu1 - mu0 + (D / ps) * (Y - mu1) - ((1 - D) / (1 - ps)) * (Y - mu0)
     b5  <- mean(lr_cf)
     se5 <- sd(lr_cf) / sqrt(n)
-    reslrcf <- data.frame("ATE" = b5, "se" = se5, "MLreg" = MLreg, "MLps" = MLps)
+    pval5 <- 2 * (1 - stats::pnorm(abs(b5 / se5)))
+    reslrcf <- data.frame(
+      estimate = b5,
+      se = se5,
+      pval = pval5,
+      MLreg = MLreg,
+      MLps = MLps
+    )
     if (csplot) {
       p <- csplot_common_support(ps = ps, D = D)
-      return(list(results = reslrcf, csplot = p))
+      return(list(results = reslrcf, csplot = p, scores = lr_cf))
     }
-    return(reslrcf)
+    return(list(results = reslrcf, scores = lr_cf))
   }
 }
-
-
 

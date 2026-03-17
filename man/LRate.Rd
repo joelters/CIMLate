@@ -228,8 +228,8 @@ models (\code{MLps}). Default is \code{ensemblefolds}}
 scores by treatment status to assess common support}
 }
 \value{
-dataframe with estimates and standard errors (if cross-fitting is employed),
-or a list with \code{results} and \code{csplot} when \code{csplot = TRUE}
+a list with \code{results} (estimate, se, pval, and selected learners),
+\code{scores} (individual orthogonal scores), and optionally \code{csplot}
 }
 \description{
 \code{LRate} estimates the ATE by using locally robust/orthogonal scores
