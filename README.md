@@ -1,16 +1,17 @@
 The goal of CIMLate is to provide a simple to use package to estimate the Average
-Treatment Effect (ATE) using different estimators. The package has three user functions:
-OLSate, directMLate and LRate. OLSate estimates the ATE simply by regressing on a treatment
-indicator and it also estimates the ATE adjusting for covariates by demeaning the covariates
-and interacting them with the treatment indicator. directMLate estimates the conditional expectation
-of the outcome given the covariates for the treatment and control groups and then computes the expected
-difference among these conditional expectations. The conditional expectations can be estimated by
-Lasso, Ridge, Random Forest (RF) or Extreme Gradient Boosting (XGB). LRate uses Locally robust scores
-(also known as orthogonal scores) to implement doubly robust estimators of the ATE. Conditional expectations
-are estimated as in directMLate and the propensity score can be estimated with RF or Logit Lasso. There is
-the option to perform cross-fitting. In the latter case and in the OLS case inference is justified and
-standard errors are reported as well. For Lasso, Ridge and Logit Lasso the order of the polynomial to fit
-can also be chosen.
+Treatment Effect (ATE) using different estimators. The package has four user functions:
+OLSate, IPWate, directMLate and LRate.
+
+OLSate estimates the ATE by OLS, with and without covariate adjustment.
+IPWate estimates the ATE using inverse propensity weighting.
+directMLate estimates the ATE from response-function differences.
+LRate uses locally robust (orthogonal) scores to implement doubly robust ATE estimation,
+with optional cross-fitting and standard errors.
+
+For ML-based estimators, CIMLate now exposes the relevant tuning parameters from
+the ML package (polynomial controls, RF/CIF, XGB, CB, Torch, OLSensemble, etc.).
+In LRate, response-function (`MLreg`) and propensity-score (`MLps`) models can be tuned
+independently via `*.ps` arguments (for example `mtry` vs `mtry.ps`).
 
 ## Installation
 
@@ -30,7 +31,7 @@ Then you can install this package with
 devtools::install_github("joelters/CIMLate")
 ```
 
-Examples of the three functions are
+Examples of the functions are
 
 ``` r
 n <- 1000
@@ -41,11 +42,20 @@ Y1 <- 5 + X + rnorm(n)
 Y <- Y1*D + Y0*(1-D)
 
 OLSate(Y,X,D)
+IPWate(Y,X,D, ML = "RF")
 directMLate(Y,X,D, ML = "RF")
 LRate(Y,X,D, MLreg = "RF", MLps = "Logit_lasso")
+
+# Example with different tuning for response and propensity models
+LRate(
+	Y, X, D,
+	MLreg = "RF",
+	MLps = "RF",
+	mtry = 1,
+	mtry.ps = 2,
+	rf.cf.ntree = 300,
+	rf.cf.ntree.ps = 100
+)
 ```
 For more info install the package and see the documentation of the functions with
-?OLSate, ?directMLate and ?LRate. For now it is not possible to change the tuning parameters
-in the Machine Learning algoriothms (they are set to the default parameters).
-If needed I suggest using the trace() function to change the tuning parameters
-(see [here](https://stackoverflow.com/questions/34800331/r-modify-and-rebuild-package)).
+?OLSate, ?IPWate, ?directMLate and ?LRate.

@@ -14,6 +14,7 @@ LRate(
   MLps = c("RF", "Logit_lasso", "CIF", "XGB", "CB", "grf", "SL"),
   pscore = NULL,
   SL.library = c("SL.ranger"),
+  SL.library.ps = SL.library,
   polynomial.Lasso = 1,
   polynomial.Ridge = 1,
   polynomial.OLS = 1,
@@ -35,6 +36,27 @@ LRate(
   ensemblefolds = 10,
   start_nlls = NULL,
   intercept = TRUE,
+  polynomial.Lasso.ps = polynomial.Lasso,
+  polynomial.Ridge.ps = polynomial.Ridge,
+  polynomial.OLS.ps = polynomial.OLS,
+  polynomial.Logit_lasso.ps = polynomial.Logit_lasso,
+  polynomial.NLLS_exp.ps = polynomial.NLLS_exp,
+  polynomial.loglin.ps = polynomial.loglin,
+  rf.cf.ntree.ps = rf.cf.ntree,
+  rf.depth.ps = rf.depth,
+  mtry.ps = mtry,
+  cf.depth.ps = cf.depth,
+  xgb.nrounds.ps = xgb.nrounds,
+  xgb.max.depth.ps = xgb.max.depth,
+  cb.iterations.ps = cb.iterations,
+  cb.depth.ps = cb.depth,
+  torch.epochs.ps = torch.epochs,
+  torch.hidden_units.ps = torch.hidden_units,
+  torch.lr.ps = torch.lr,
+  torch.dropout.ps = torch.dropout,
+  ensemblefolds.ps = ensemblefolds,
+  start_nlls.ps = start_nlls,
+  intercept.ps = intercept,
   CF = TRUE,
   K = 2
 )
@@ -56,62 +78,146 @@ RF, CIF, Logit Lasso, XGB, CB, grf or SuperLearner to estimate propensity scores
 \item{pscore}{vector with treatment probabilities if known (e.g. in an RCT).
 Otherwise leave NULL so that they are estimated using MLps}
 
-\item{SL.library}{string vector with learners to use in SuperLearner}
+\item{SL.library}{string vector with learners to use in SuperLearner for
+response-function models (\code{MLreg})}
 
-\item{polynomial.Lasso}{degree of polynomial to be fitted when using Lasso.
+\item{SL.library.ps}{string vector with learners to use in SuperLearner for
+propensity-score models (\code{MLps}). Default is \code{SL.library}}
+
+\item{polynomial.Lasso}{degree of polynomial to be fitted when using Lasso
+in response-function models (\code{MLreg}).
 1 just fits the input X. 2 squares all variables and adds all pairwise
 interactions. 3 squares and cubes all variables and adds all pairwise and
 threewise interactions...}
 
-\item{polynomial.Ridge}{degree of polynomial to be fitted when using Ridge,
+\item{polynomial.Ridge}{degree of polynomial to be fitted when using Ridge
+in response-function models (\code{MLreg}),
 see polynomial.Lasso for more info}
 
-\item{polynomial.OLS}{degree of polynomial to be fitted when using OLS,
+\item{polynomial.OLS}{degree of polynomial to be fitted when using OLS
+in response-function models (\code{MLreg}),
 see polynomial.Lasso for more info}
 
 \item{polynomial.Logit_lasso}{degree of polynomial to be fitted when using
-Logit Lasso, see polynomial.Lasso for more info}
+Logit Lasso in response-function models (\code{MLreg}),
+see polynomial.Lasso for more info}
 
 \item{polynomial.NLLS_exp}{degree of polynomial to be fitted when using
-NLLS_exp, see polynomial.Lasso for more info}
+NLLS_exp in response-function models (\code{MLreg}),
+see polynomial.Lasso for more info}
 
 \item{polynomial.loglin}{degree of polynomial to be fitted when using
-loglin, see polynomial.Lasso for more info}
+loglin in response-function models (\code{MLreg}),
+see polynomial.Lasso for more info}
 
-\item{rf.cf.ntree}{how many trees should be grown when using RF or CIF}
+\item{rf.cf.ntree}{how many trees should be grown when using RF or CIF in
+response-function models (\code{MLreg})}
 
-\item{rf.depth}{how deep should trees be grown in RF (NULL is full depth,
+\item{rf.depth}{how deep should trees be grown in RF for response-function
+models (\code{MLreg}) (NULL is full depth,
 the default from ranger)}
 
-\item{mtry}{number of variables to possibly split at in each node for RF or CIF}
+\item{mtry}{number of variables to possibly split at in each node for RF or
+CIF in response-function models (\code{MLreg})}
 
-\item{cf.depth}{how deep should trees be grown in CIF (Inf is default from partykit)}
+\item{cf.depth}{how deep should trees be grown in CIF for response-function
+models (\code{MLreg}) (Inf is default from partykit)}
 
-\item{xgb.nrounds}{number of boosting rounds to use in XGB}
+\item{xgb.nrounds}{number of boosting rounds to use in XGB for
+response-function models (\code{MLreg})}
 
-\item{xgb.max.depth}{maximum tree depth in XGB}
+\item{xgb.max.depth}{maximum tree depth in XGB for response-function models
+(\code{MLreg})}
 
-\item{cb.iterations}{maximum number of trees that can be built in CB}
+\item{cb.iterations}{maximum number of trees that can be built in CB for
+response-function models (\code{MLreg})}
 
-\item{cb.depth}{depth of trees in CB}
+\item{cb.depth}{depth of trees in CB for response-function models (\code{MLreg})}
 
-\item{torch.epochs}{number of training epochs for the Torch neural network}
+\item{torch.epochs}{number of training epochs for the Torch neural network
+in response-function models (\code{MLreg})}
 
 \item{torch.hidden_units}{numeric vector specifying the number of neurons in
-each hidden layer of the Torch neural network}
+each hidden layer of the Torch neural network in response-function models
+(\code{MLreg})}
 
-\item{torch.lr}{learning rate for the Torch optimizer}
+\item{torch.lr}{learning rate for the Torch optimizer in response-function
+models (\code{MLreg})}
 
 \item{torch.dropout}{dropout rate for regularization in the Torch neural
-network (between 0 and 1)}
+network in response-function models (\code{MLreg}) (between 0 and 1)}
 
-\item{ensemblefolds}{number of cross-fitting folds used in OLSensemble}
+\item{ensemblefolds}{number of cross-fitting folds used in OLSensemble for
+response-function models (\code{MLreg})}
 
 \item{start_nlls}{list with starting values for the NLLS_exp parameters.
 Default uses log(mean(Y)) for intercept and zero for slopes.}
 
 \item{intercept}{logical; should an intercept be included? Default TRUE.
-Only applies to OLS, Lasso, Ridge, and loglin.}
+Only applies to OLS, Lasso, Ridge, and loglin in response-function models (\code{MLreg}).}
+
+\item{polynomial.Lasso.ps}{same as \code{polynomial.Lasso} but for propensity-score
+models (\code{MLps}). Default is \code{polynomial.Lasso}}
+
+\item{polynomial.Ridge.ps}{same as \code{polynomial.Ridge} but for propensity-score
+models (\code{MLps}). Default is \code{polynomial.Ridge}}
+
+\item{polynomial.OLS.ps}{same as \code{polynomial.OLS} but for propensity-score
+models (\code{MLps}). Default is \code{polynomial.OLS}}
+
+\item{polynomial.Logit_lasso.ps}{same as \code{polynomial.Logit_lasso} but for
+propensity-score models (\code{MLps}). Default is \code{polynomial.Logit_lasso}}
+
+\item{polynomial.NLLS_exp.ps}{same as \code{polynomial.NLLS_exp} but for
+propensity-score models (\code{MLps}). Default is \code{polynomial.NLLS_exp}}
+
+\item{polynomial.loglin.ps}{same as \code{polynomial.loglin} but for
+propensity-score models (\code{MLps}). Default is \code{polynomial.loglin}}
+
+\item{rf.cf.ntree.ps}{same as \code{rf.cf.ntree} but for propensity-score models
+(\code{MLps}). Default is \code{rf.cf.ntree}}
+
+\item{rf.depth.ps}{same as \code{rf.depth} but for propensity-score models
+(\code{MLps}). Default is \code{rf.depth}}
+
+\item{mtry.ps}{same as \code{mtry} but for propensity-score models (\code{MLps}).
+Default is \code{mtry}}
+
+\item{cf.depth.ps}{same as \code{cf.depth} but for propensity-score models
+(\code{MLps}). Default is \code{cf.depth}}
+
+\item{xgb.nrounds.ps}{same as \code{xgb.nrounds} but for propensity-score models
+(\code{MLps}). Default is \code{xgb.nrounds}}
+
+\item{xgb.max.depth.ps}{same as \code{xgb.max.depth} but for propensity-score
+models (\code{MLps}). Default is \code{xgb.max.depth}}
+
+\item{cb.iterations.ps}{same as \code{cb.iterations} but for propensity-score
+models (\code{MLps}). Default is \code{cb.iterations}}
+
+\item{cb.depth.ps}{same as \code{cb.depth} but for propensity-score models
+(\code{MLps}). Default is \code{cb.depth}}
+
+\item{torch.epochs.ps}{same as \code{torch.epochs} but for propensity-score models
+(\code{MLps}). Default is \code{torch.epochs}}
+
+\item{torch.hidden_units.ps}{same as \code{torch.hidden_units} but for
+propensity-score models (\code{MLps}). Default is \code{torch.hidden_units}}
+
+\item{torch.lr.ps}{same as \code{torch.lr} but for propensity-score models
+(\code{MLps}). Default is \code{torch.lr}}
+
+\item{torch.dropout.ps}{same as \code{torch.dropout} but for propensity-score
+models (\code{MLps}). Default is \code{torch.dropout}}
+
+\item{ensemblefolds.ps}{same as \code{ensemblefolds} but for propensity-score
+models (\code{MLps}). Default is \code{ensemblefolds}}
+
+\item{start_nlls.ps}{same as \code{start_nlls} but for propensity-score models
+(\code{MLps}). Default is \code{start_nlls}}
+
+\item{intercept.ps}{same as \code{intercept} but for propensity-score models
+(\code{MLps}). Default is \code{intercept}}
 
 \item{CF}{whether cross-fitting should be used}
 
