@@ -58,7 +58,8 @@ LRate(
   start_nlls.ps = start_nlls,
   intercept.ps = intercept,
   CF = TRUE,
-  K = 2
+  K = 2,
+  csplot = FALSE
 )
 }
 \arguments{
@@ -222,9 +223,13 @@ models (\code{MLps}). Default is \code{ensemblefolds}}
 \item{CF}{whether cross-fitting should be used}
 
 \item{K}{number of splits to use for cross-fitting}
+
+\item{csplot}{logical; if TRUE, returns a histogram overlay of propensity
+scores by treatment status to assess common support}
 }
 \value{
-dataframe with estimates and standard errors (if cross-fitting is employed)
+dataframe with estimates and standard errors (if cross-fitting is employed),
+or a list with \code{results} and \code{csplot} when \code{csplot = TRUE}
 }
 \description{
 \code{LRate} estimates the ATE by using locally robust/orthogonal scores

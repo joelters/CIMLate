@@ -44,7 +44,10 @@
 #' network (between 0 and 1)
 #' @param intercept logical; should an intercept be included? Default TRUE.
 #' Only applies to OLS, Lasso, Ridge, and loglin.
-#' @returns dataframe with estimates
+#' @param csplot logical; if TRUE, returns a histogram overlay of propensity
+#' scores by treatment status to assess common support
+#' @returns dataframe with estimates, or a list with `results` and `csplot`
+#' when `csplot = TRUE`
 #' @examples
 #' n <- 1000
 #' X <- rnorm(n)
@@ -77,7 +80,8 @@ IPWate <- function(Y, X, D,
                    torch.hidden_units = c(64, 32),
                    torch.lr = 0.01,
                    torch.dropout = 0.2,
-                   intercept = TRUE) {
+                   intercept = TRUE,
+                   csplot = FALSE) {
 
   if (!("data.frame" %in% class(X))) {
     X <- data.frame(X)
@@ -111,11 +115,14 @@ IPWate <- function(Y, X, D,
   if (sum(ps <= 0 | ps >= 1) > 0) {
     warning("There are estimated propensity scores <= 0 or >= 1,
                 they have been changed to 0.001 or 0.999")
-    ps <- ps * (ps > 0 | ps < 1) +
-      0.001 * (ps <= 0) + 0.999 * (ps >= 1)
+    ps <- pmin(pmax(ps, 0.001), 0.999)
   }
 
   b3 <- round(mean(Y * D / ps - Y * (1 - D) / (1 - ps)), 3)
   resdirect <- data.frame("ATE" = b3, "ML" = ML)
+  if (csplot) {
+    p <- csplot_common_support(ps = ps, D = D)
+    return(list(results = resdirect, csplot = p))
+  }
   return(resdirect)
 }

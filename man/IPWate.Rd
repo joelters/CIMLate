@@ -30,7 +30,8 @@ IPWate(
   torch.hidden_units = c(64, 32),
   torch.lr = 0.01,
   torch.dropout = 0.2,
-  intercept = TRUE
+  intercept = TRUE,
+  csplot = FALSE
 )
 }
 \arguments{
@@ -97,9 +98,13 @@ network (between 0 and 1)}
 
 \item{intercept}{logical; should an intercept be included? Default TRUE.
 Only applies to OLS, Lasso, Ridge, and loglin.}
+
+\item{csplot}{logical; if TRUE, returns a histogram overlay of propensity
+scores by treatment status to assess common support}
 }
 \value{
-dataframe with estimates
+dataframe with estimates, or a list with \code{results} and \code{csplot}
+when \code{csplot = TRUE}
 }
 \description{
 \code{IPWate} estimates the ATE by estimating the propensity score by Machine Learning

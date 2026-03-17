@@ -115,7 +115,10 @@
 #' (`MLps`). Default is `intercept`
 #' @param CF whether cross-fitting should be used
 #' @param K number of splits to use for cross-fitting
-#' @returns dataframe with estimates and standard errors (if cross-fitting is employed)
+#' @param csplot logical; if TRUE, returns a histogram overlay of propensity
+#' scores by treatment status to assess common support
+#' @returns dataframe with estimates and standard errors (if cross-fitting is employed),
+#' or a list with `results` and `csplot` when `csplot = TRUE`
 #' @examples
 #' n <- 1000
 #' X <- rnorm(n)
@@ -178,7 +181,8 @@ LRate <- function(Y,
                   start_nlls.ps = start_nlls,
                   intercept.ps = intercept,
                   CF = TRUE,
-                  K = 2) {
+                  K = 2,
+                  csplot = FALSE) {
   if (!("data.frame" %in% class(X))) {
     X <- data.frame(X)
   }
@@ -253,8 +257,7 @@ LRate <- function(Y,
       if (sum(ps$FVs <= 0 | ps$FVs >= 1) > 0) {
         warning("There are estimated propensity scores <= 0 or >= 1,
                 they have been changed to 0.001 or 0.999")
-        ps$FVs <- ps$FVs * (ps$FVs > 0 | ps$FVs < 1) +
-          0.001 * (ps$FVs <= 0) + 0.999 * (ps$FVs >= 1)
+        ps$FVs <- pmin(pmax(ps$FVs, 0.001), 0.999)
       }
     } else {
       ps <- list(FVs = pscore)
@@ -263,6 +266,10 @@ LRate <- function(Y,
     lr <- mu1 - mu0 + (D / ps$FVs) * (Y - mu1) - ((1 - D) / (1 - ps$FVs)) * (Y - mu0)
     b4 <- round(mean(lr), 3)
     reslr <- data.frame("ATE" = b4, "MLreg" = MLreg, "MLps" = MLps)
+    if (csplot) {
+      p <- csplot_common_support(ps = ps$FVs, D = D)
+      return(list(results = reslr, csplot = p))
+    }
     return(reslr)
   } else {
     n <- length(Y)
@@ -317,8 +324,7 @@ LRate <- function(Y,
       if (sum(ps[ind[[i]]] <= 0 | ps[ind[[i]]] >= 1) > 0) {
         warning("There are estimated propensity scores <= 0 or >= 1,
                 they have been changed to 0.001 or 0.999")
-        ps[ind[[i]]] <- ps[ind[[i]]] * (ps[ind[[i]]] > 0 | ps[ind[[i]]] < 1) +
-          0.001 * (ps[ind[[i]]] <= 0) + 0.999 * (ps[ind[[i]]] >= 1)
+        ps[ind[[i]]] <- pmin(pmax(ps[ind[[i]]], 0.001), 0.999)
       }
     }
 
@@ -326,7 +332,13 @@ LRate <- function(Y,
     b5  <- mean(lr_cf)
     se5 <- sd(lr_cf) / sqrt(n)
     reslrcf <- data.frame("ATE" = b5, "se" = se5, "MLreg" = MLreg, "MLps" = MLps)
+    if (csplot) {
+      p <- csplot_common_support(ps = ps, D = D)
+      return(list(results = reslrcf, csplot = p))
+    }
     return(reslrcf)
   }
 }
+
+
 
