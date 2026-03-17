@@ -9,11 +9,32 @@ LRate(
   Y,
   X,
   D,
-  MLreg = c("Lasso", "Ridge", "RF", "XGB", "grf", "SL"),
-  MLps = c("RF", "Logit_lasso", "grf", "SL"),
-  SL.library = c("SL.ranger"),
+  MLreg = c("Lasso", "Ridge", "RF", "CIF", "XGB", "CB", "Torch", "grf", "SL",
+    "OLSensemble"),
+  MLps = c("RF", "Logit_lasso", "CIF", "XGB", "CB", "grf", "SL"),
   pscore = NULL,
-  polynomial = 1,
+  SL.library = c("SL.ranger"),
+  polynomial.Lasso = 1,
+  polynomial.Ridge = 1,
+  polynomial.OLS = 1,
+  polynomial.Logit_lasso = 1,
+  polynomial.NLLS_exp = 1,
+  polynomial.loglin = 1,
+  rf.cf.ntree = 500,
+  rf.depth = NULL,
+  mtry = max(floor(ncol(X)/3), 1),
+  cf.depth = Inf,
+  xgb.nrounds = 200,
+  xgb.max.depth = 6,
+  cb.iterations = 500,
+  cb.depth = 6,
+  torch.epochs = 50,
+  torch.hidden_units = c(64, 32),
+  torch.lr = 0.01,
+  torch.dropout = 0.2,
+  ensemblefolds = 10,
+  start_nlls = NULL,
+  intercept = TRUE,
   CF = TRUE,
   K = 2
 )
@@ -26,18 +47,71 @@ LRate(
 \item{D}{the treatment indicator}
 
 \item{MLreg}{is a string specifying which machine learner to use among
-Lasso, Ridge, Random Forests or XGBoosting to estimate response functions}
+Lasso, Ridge, RF, CIF, XGB, CB, Torch, grf, OLSensemble or SuperLearner
+to estimate response functions}
 
 \item{MLps}{is a string specifying which machine learner to use among
-Random Forests or Logit Lasso to estimate propensity scores}
+RF, CIF, Logit Lasso, XGB, CB, grf or SuperLearner to estimate propensity scores}
 
 \item{pscore}{vector with treatment probabilities if known (e.g. in an RCT).
 Otherwise leave NULL so that they are estimated using MLps}
 
-\item{polynomial}{degree of polynomial to be fitted when using Lasso, Ridge
-or Logit Lasso. 1 just fits the input X. 2 squares all variables and adds
-all pairwise interactions. 3 squares and cubes all variables and adds all
-pairwise and threewise interactions...}
+\item{SL.library}{string vector with learners to use in SuperLearner}
+
+\item{polynomial.Lasso}{degree of polynomial to be fitted when using Lasso.
+1 just fits the input X. 2 squares all variables and adds all pairwise
+interactions. 3 squares and cubes all variables and adds all pairwise and
+threewise interactions...}
+
+\item{polynomial.Ridge}{degree of polynomial to be fitted when using Ridge,
+see polynomial.Lasso for more info}
+
+\item{polynomial.OLS}{degree of polynomial to be fitted when using OLS,
+see polynomial.Lasso for more info}
+
+\item{polynomial.Logit_lasso}{degree of polynomial to be fitted when using
+Logit Lasso, see polynomial.Lasso for more info}
+
+\item{polynomial.NLLS_exp}{degree of polynomial to be fitted when using
+NLLS_exp, see polynomial.Lasso for more info}
+
+\item{polynomial.loglin}{degree of polynomial to be fitted when using
+loglin, see polynomial.Lasso for more info}
+
+\item{rf.cf.ntree}{how many trees should be grown when using RF or CIF}
+
+\item{rf.depth}{how deep should trees be grown in RF (NULL is full depth,
+the default from ranger)}
+
+\item{mtry}{number of variables to possibly split at in each node for RF or CIF}
+
+\item{cf.depth}{how deep should trees be grown in CIF (Inf is default from partykit)}
+
+\item{xgb.nrounds}{number of boosting rounds to use in XGB}
+
+\item{xgb.max.depth}{maximum tree depth in XGB}
+
+\item{cb.iterations}{maximum number of trees that can be built in CB}
+
+\item{cb.depth}{depth of trees in CB}
+
+\item{torch.epochs}{number of training epochs for the Torch neural network}
+
+\item{torch.hidden_units}{numeric vector specifying the number of neurons in
+each hidden layer of the Torch neural network}
+
+\item{torch.lr}{learning rate for the Torch optimizer}
+
+\item{torch.dropout}{dropout rate for regularization in the Torch neural
+network (between 0 and 1)}
+
+\item{ensemblefolds}{number of cross-fitting folds used in OLSensemble}
+
+\item{start_nlls}{list with starting values for the NLLS_exp parameters.
+Default uses log(mean(Y)) for intercept and zero for slopes.}
+
+\item{intercept}{logical; should an intercept be included? Default TRUE.
+Only applies to OLS, Lasso, Ridge, and loglin.}
 
 \item{CF}{whether cross-fitting should be used}
 
